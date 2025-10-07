@@ -4,7 +4,7 @@ import './App.css';
 const App = () => {
   return (
     <>
-      <h1>Ferreteria El Pezcuezon</h1>
+      <h1>Ferreteria El Pez Cuezon</h1>
     </>
   )
 }
