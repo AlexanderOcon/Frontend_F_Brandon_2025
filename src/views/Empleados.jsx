@@ -1,8 +1,8 @@
-const Ventas = () => {
+const Compras = () => {
   return(
     <>
-      <h2> Pagina de Ventas </h2>
+      <h2> Pagina de Compras </h2>
     </>
   );
 }
-export default Ventas;
+export default Compras;
