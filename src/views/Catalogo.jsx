@@ -3,6 +3,6 @@ const Catalogo = () => {
     <>
       <h2> Pagina de Catalogo </h2>
     </>
-  )
+  );
 }
 export default Catalogo;

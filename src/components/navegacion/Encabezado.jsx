@@ -44,18 +44,53 @@ const Encabezado = () => {
 
           <Offcanvas.Body>
             <Nav className="flex-grow-1 pe-3">
-              <Nav.Link onClick={() => manejarNavegacion("/inicio")}>
+
+              <Nav.Link className={mostrarMenu ? "text-dark": "text-white"}
+              onClick={() => manejarNavegacion("/")}>
                 Inicio
-              </Nav.Link>
-              <Nav.Link onClick={() => manejarNavegacion("/categorias")}>
+                </Nav.Link>
+
+              <Nav.Link  className={mostrarMenu ? "text-dark": "text-white"}
+              onClick={() => manejarNavegacion("/categorias")}>
                 Categorías
-              </Nav.Link>
-              <Nav.Link onClick={() => manejarNavegacion("/productos")}>
+                </Nav.Link>
+
+
+              <Nav.Link  className={mostrarMenu ? "text-dark": "text-white"}
+              onClick={() => manejarNavegacion("/productos")}>
                 Productos
-              </Nav.Link>
-              <Nav.Link onClick={() => manejarNavegacion("/catalogo")}>
+                </Nav.Link>
+
+              <Nav.Link  className={mostrarMenu ? "text-dark": "text-white"}
+              onClick={() => manejarNavegacion("/ventas")}>
+                Ventas
+                </Nav.Link>
+
+              <Nav.Link  className={mostrarMenu ? "text-dark": "text-white"}
+              onClick={() => manejarNavegacion("/clientes")}>
+                Clientes
+                </Nav.Link>
+
+              <Nav.Link  className={mostrarMenu ? "text-dark": "text-white"}
+              onClick={() => manejarNavegacion("/empleados")}>
+                Empleados
+                </Nav.Link>
+
+              <Nav.Link  className={mostrarMenu ? "text-dark": "text-white"}
+              onClick={() => manejarNavegacion("/usuarios")}>
+                Usuarios
+                </Nav.Link>
+
+              <Nav.Link  className={mostrarMenu ? "text-dark": "text-white"}
+              onClick={() => manejarNavegacion("/compras")}>
+                Compras
+                </Nav.Link>
+
+              <Nav.Link  className={mostrarMenu ? "text-dark": "text-white"}
+              onClick={() => manejarNavegacion("/catalogo")}>
                 Catálogo
-              </Nav.Link>
+                </Nav.Link>
+
             </Nav>
           </Offcanvas.Body>
         </Navbar.Offcanvas>
