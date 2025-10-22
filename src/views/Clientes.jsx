@@ -1,8 +1,40 @@
-const Clientes = () => {
-  return(
+import { useState, useEffect } from "react";
+import { Container } from "react-bootstrap";
+import TablaClientes from "../components/clientes/TablaClientes";
+
+const Categorias = () => {
+  const [clientes, setClientes] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  const obtenerClientes = async () => {
+    try {
+      const respuesta = await fetch("http://localhost:3000/api/clientes");
+      if (!respuesta.ok) {
+        throw new Error("Error al obtener las categorias");
+      }
+
+      const datos = await respuesta.json();
+      setClientes(datos);
+      setCargando(false);
+    } catch (error) {
+      console.error(error.message);
+      setCargando(false);
+    }
+  };
+
+  useEffect(() => {
+    obtenerClientes();
+  }, []);
+
+  return (
     <>
-      <h2> Pagina de Clientes </h2>
+      <Container className = "mt-4">
+        <h4> Clientes </h4>
+        <TablaClientes clientes={clientes}
+        cargando={cargando}/>
+      </Container>
     </>
   );
 }
-export default Clientes;
+
+export default Categorias;
