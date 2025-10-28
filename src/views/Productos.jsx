@@ -1,26 +1,43 @@
 import { useState, useEffect } from "react";
-import { Container } from "react-bootstrap";
+import { Container, Col, Row, Button } from "react-bootstrap";
 import TablaProductos from "../components/productos/TablaProductos";
+import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 
 const Productos = () => {
-
-  const [productos, setProductos] = useState([]);
+  const [productos, setproductos] = useState([]);
   const [cargando, setCargando] = useState(true);
+
+  const [productosFiltrados, setProductosFiltrados] = useState([]);
+  const [textoBusqueda, setTextoBusqueda] = useState("");
 
   const obtenerProductos = async () => {
     try {
       const respuesta = await fetch("http://localhost:3000/api/productos");
       if (!respuesta.ok) {
-        throw new Error("Error al obtener las categorias");
+        throw new Error("Error al obtener los productos");
       }
 
       const datos = await respuesta.json();
-      setProductos(datos);
+      setproductos(datos);
+      setProductosFiltrados(datos);
       setCargando(false);
     } catch (error) {
-      console.error(error.message);
+      console.log(error.message);
       setCargando(false);
     }
+  };
+  const manejarCambioBusqueda = (e) => {
+    const texto = e.target.value.toLowerCase();
+    setTextoBusqueda(texto);
+    const filtrados = productos.filter(
+      (producto) =>
+        producto.nombre_producto.toLowerCase().includes(texto) ||
+        producto.descripcion_producto.toLowerCase().includes(texto) ||
+        producto.id_categoria == texto ||
+        producto.precio_unitario == texto ||
+        producto.stock == texto
+    );
+    setProductosFiltrados(filtrados);
   };
 
   useEffect(() => {
@@ -29,13 +46,19 @@ const Productos = () => {
 
   return (
     <>
-      <Container className = "mt-4">
-        <h4> Productos </h4>
-        <TablaProductos productos={productos}
-        cargando={cargando}/>
+      <Container className="mt-4">
+        <h4>Productos</h4>
+        <Row>
+          <Col lg={5} md={8} sm={8} xs={7}>
+            <CuadroBusquedas
+              textoBusqueda={textoBusqueda}
+              manejarCambioBusqueda={manejarCambioBusqueda}
+            />
+          </Col>
+        </Row>
+        <TablaProductos productos={productosFiltrados} cargando={cargando} />
       </Container>
     </>
   );
-}
-
+};
 export default Productos;

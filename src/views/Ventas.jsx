@@ -1,39 +1,69 @@
 import { useState, useEffect } from "react";
-import { Container } from "react-bootstrap";
+import { Container, Col, Row, Button } from "react-bootstrap";
 import TablaVentas from "../components/ventas/TablaVentas";
-
+import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 
 const Ventas = () => {
-
-  const [ventas, setVentas] = useState([]);
+  const [ventas, setventas] = useState([]);
   const [cargando, setCargando] = useState(true);
+  
+  const [ventasFiltradas, setVentasFiltradas] = useState([]);
+  const [textoBusqueda, setTextoBusqueda] = useState("");
 
-  const obtenerventas = async () => {
+
+
+  const ObtenerVentas = async () => {
     try {
       const respuesta = await fetch("http://localhost:3000/api/ventas");
       if (!respuesta.ok) {
-        throw new Error("Error al obtener las categorias");
+        throw new Error("Error al obtener las ventas");
       }
-
       const datos = await respuesta.json();
-      setVentas(datos);
+      setventas(datos);
+      setVentasFiltradas(datos);
       setCargando(false);
     } catch (error) {
-      console.error(error.message);
+      console.log(error.message);
       setCargando(false);
     }
   };
+  const manejarCambioBusqueda = (e) => {
+    const texto = e.target.value.toLowerCase();
+    setTextoBusqueda(texto);
+    
+    if (texto.trim() === "") {
+  setVentasFiltradas(ventas);
+  return;
+}
+    const filtradas = ventas.filter(
+      (venta) =>
+        venta.id_cliente == texto ||
+        venta.id_empleado == texto ||
+        venta.fecha_venta == texto ||
+        venta.total_venta == texto
+    );
+    setVentasFiltradas(filtradas);
+  }
 
   useEffect(() => {
-    obtenerventas();
+    ObtenerVentas();
   }, []);
-
   return (
     <>
-      <Container className = "mt-4">
-        <h4> Ventas </h4>
-        <TablaVentas ventas={ventas}
-        cargando={cargando}/>
+      <Container className="mt-4">
+        <h4>Ventas</h4>
+        <Row>
+          <Col lg={5} md={8} sm={8} xs={7}>
+            <CuadroBusquedas
+              textoBusqueda={textoBusqueda}
+              manejarCambioBusqueda={manejarCambioBusqueda}
+            />
+          </Col>
+        </Row>
+        <TablaVentas
+        ventas={ventasFiltradas}
+          cargando={cargando}
+          />
       </Container>
     </>
   );

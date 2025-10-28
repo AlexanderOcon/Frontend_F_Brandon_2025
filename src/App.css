@@ -2,3 +2,13 @@
 margin-top: 40px;
 padding: 20px;
 }
+
+.color-boton-registro {
+background-color: green rgb (91, 166, 30);
+border-color: green rgb (91, 166, 30);  
+}
+
+.color-boton-registro:hover {
+background-color: green;
+border-color: green;  
+}
