@@ -1,6 +1,28 @@
-import { Table, Spinner } from "react-bootstrap";
+import { Table, Spinner, Button } from "react-bootstrap";
+import { useState } from "react";
+import BotonOrden from "../ordenamiento/BotonOrden";
 
-const TablaVentas = ({ ventas, cargando }) => {
+const TablaVentas = ({ ventas, cargando, abrirModalEdicion, abrirModalEliminacion }) => {
+  const [orden, setOrden] = useState({ campo: "id_venta", direccion: "asc" });
+
+  const manejarOrden = (campo) => {
+    setOrden((prev) => ({
+      campo,
+      direccion: prev.campo === campo && prev.direccion === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  const ventasOrdenadas = [...ventas].sort((a, b) => {
+    const valorA = a[orden.campo];
+    const valorB = b[orden.campo];
+
+    if (typeof valorA === "number" && typeof valorB === "number") {
+      return orden.direccion === "asc" ? valorA - valorB : valorB - valorA;
+    }
+
+    const comparacion = String(valorA ?? "").localeCompare(String(valorB ?? ""));
+    return orden.direccion === "asc" ? comparacion : -comparacion;
+  });
 
   if (cargando) {
     return (
@@ -17,24 +39,55 @@ const TablaVentas = ({ ventas, cargando }) => {
       <Table striped bordered hover>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>ID Cliente</th>
-            <th>ID Empleado</th>
-            <th>Fecha Venta</th>
-            <th>Total Venta</th>
+            <BotonOrden campo="id_venta" orden={orden} manejarOrden={manejarOrden}>
+              ID
+            </BotonOrden>
+
+            <BotonOrden campo="id_cliente" orden={orden} manejarOrden={manejarOrden}>
+              ID Cliente
+            </BotonOrden>
+
+            <BotonOrden campo="id_empleado" orden={orden} manejarOrden={manejarOrden}>
+              ID Empleado
+            </BotonOrden>
+
+            <BotonOrden campo="fecha_venta" orden={orden} manejarOrden={manejarOrden}>
+              Fecha Venta
+            </BotonOrden>
+
+            <BotonOrden campo="total_venta" orden={orden} manejarOrden={manejarOrden}>
+              Total Venta
+            </BotonOrden>
+
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {ventas.map((venta) => {
-            return(
+          {ventasOrdenadas.map((venta) => {
+            return (
               <tr key={venta.id_venta}>
                 <td>{venta.id_venta}</td>
                 <td>{venta.id_cliente}</td>
                 <td>{venta.id_empleado}</td>
                 <td>{venta.fecha_venta}</td>
                 <td>{venta.total_venta}</td>
-                <td>Acciones</td>
+                <td>
+                  <Button
+                    variant="outline-warning"
+                    size="sm"
+                    className="me-2"
+                    onClick={() => abrirModalEdicion(venta)}
+                  >
+                    <i className="bi bi-pencil"></i>
+                  </Button>
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    onClick={() => abrirModalEliminacion(venta)}
+                  >
+                    <i className="bi bi-trash"></i>
+                  </Button>
+                </td>
               </tr>
             );
           })}

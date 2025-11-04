@@ -1,8 +1,8 @@
-import { Table, Spinner } from "react-bootstrap";
+import { Table, Spinner, Button } from "react-bootstrap";
 import { useState } from "react";
 import BotonOrden from "../ordenamiento/BotonOrden";
 
-const TablaClientes = ({ clientes, cargando }) => {
+const TablaClientes = ({ clientes, cargando, abrirModalEdicion, abrirModalEliminacion }) => {
   const [orden, setOrden] = useState({ campo: "id_cliente", direccion: "asc" });
 
   const manejarOrden = (campo) => {
@@ -86,7 +86,23 @@ const TablaClientes = ({ clientes, cargando }) => {
                 <td>{cliente.celular}</td>
                 <td>{cliente.direccion}</td>
                 <td>{cliente.cedula}</td>
-                <td>Acciones</td>
+                <td>
+                  <Button
+                    variant="outline-warning"
+                    size="sm"
+                    className="me-2"
+                    onClick={() => abrirModalEdicion(cliente)}
+                  >
+                    <i className="bi bi-pencil"></i>
+                  </Button>
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    onClick={() => abrirModalEliminacion(cliente)}
+                  >
+                    <i className="bi bi-trash"></i>
+                  </Button>
+                </td>
               </tr>
             );
           })}
