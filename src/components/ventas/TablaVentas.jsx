@@ -1,8 +1,31 @@
 import { Table, Spinner, Button } from "react-bootstrap";
 import { useState } from "react";
 import BotonOrden from "../ordenamiento/BotonOrden";
+import Paginacion from "../ordenamiento/Paginacion";
 
-const TablaVentas = ({ ventas, cargando, abrirModalEdicion, abrirModalEliminacion }) => {
+// Formatea fechas en estilo local corto (ej: 04/11/2025) sin modificar los datos
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  try {
+    return new Date(dateStr).toLocaleString("es-NI", {
+      timeZone: "America/Managua",
+      dateStyle: "short",
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
+const TablaVentas = ({
+  ventas,
+  cargando,
+  abrirModalEdicion,
+  abrirModalEliminacion,
+  totalElementos,
+  elementosPorPagina,
+  paginaActual,
+  establecerPaginaActual,
+}) => {
   const [orden, setOrden] = useState({ campo: "id_venta", direccion: "asc" });
 
   const manejarOrden = (campo) => {
@@ -69,7 +92,7 @@ const TablaVentas = ({ ventas, cargando, abrirModalEdicion, abrirModalEliminacio
                 <td>{venta.id_venta}</td>
                 <td>{venta.id_cliente}</td>
                 <td>{venta.id_empleado}</td>
-                <td>{venta.fecha_venta}</td>
+                <td>{formatDate(venta.fecha_venta)}</td>
                 <td>{venta.total_venta}</td>
                 <td>
                   <Button
@@ -93,6 +116,12 @@ const TablaVentas = ({ ventas, cargando, abrirModalEdicion, abrirModalEliminacio
           })}
         </tbody>
       </Table>
+      <Paginacion
+        elementosPorPagina={elementosPorPagina}
+        totalElementos={totalElementos}
+        paginaActual={paginaActual}
+        establecerPaginaActual={establecerPaginaActual}
+      />
     </>
   );
 };

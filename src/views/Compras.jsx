@@ -13,6 +13,9 @@ const Compras = () => {
   const [comprasFiltradas, setComprasFiltradas] = useState([]);
   const [textoBusqueda, setTextoBusqueda] = useState("");
 
+  const [paginaActual, establecerPaginaActual] = useState(1);
+  const elementosPorPagina = 5;
+
   const [mostrarModal, setMostrarModal] = useState(false);
   const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
   const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
@@ -158,10 +161,17 @@ const Compras = () => {
           </Col>
         </Row>
         <TablaCompras
-          compras={comprasFiltradas}
+          compras={comprasFiltradas.slice(
+            (paginaActual - 1) * elementosPorPagina,
+            paginaActual * elementosPorPagina
+          )}
           cargando={cargando}
           abrirModalEdicion={abrirModalEdicion}
           abrirModalEliminacion={abrirModalEliminacion}
+          totalElementos={compras.length}
+          elementosPorPagina={elementosPorPagina}
+          paginaActual={paginaActual}
+          establecerPaginaActual={establecerPaginaActual}
         />
         <ModalRegistroCompra
           mostrarModal={mostrarModal}

@@ -1,7 +1,7 @@
 import { Modal, Button } from "react-bootstrap";
 
 const ModalEliminacionVenta = ({ mostrar, setMostrar, venta, confirmarEliminacion }) => {
-  const id = venta?.id_venta || venta?.cliente || venta?.fecha || "esta venta";
+  const id = venta?.id_venta || venta?.id_cliente || venta?.fecha_venta ||  "esta venta";
   return (
     <Modal show={mostrar} onHide={() => setMostrar(false)} centered>
       <Modal.Header closeButton>

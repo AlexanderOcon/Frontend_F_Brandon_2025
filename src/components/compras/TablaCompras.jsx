@@ -1,8 +1,31 @@
 import { Table, Spinner, Button } from "react-bootstrap";
 import { useState } from "react";
 import BotonOrden from "../ordenamiento/BotonOrden";
+import Paginacion from "../ordenamiento/Paginacion";
 
-const TablaCompras = ({ compras, cargando, abrirModalEdicion, abrirModalEliminacion }) => {
+// Formatea fechas en estilo local corto (ej: 04/11/2025) sin modificar los datos
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  try {
+    return new Date(dateStr).toLocaleString("es-NI", {
+      timeZone: "America/Managua",
+      dateStyle: "short",
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
+const TablaCompras = ({
+  compras,
+  cargando,
+  abrirModalEdicion,
+  abrirModalEliminacion,
+  totalElementos,
+  elementosPorPagina,
+  paginaActual,
+  establecerPaginaActual,
+}) => {
   const [orden, setOrden] = useState({ campo: "id_compra", direccion: "asc" });
 
   const manejarOrden = (campo) => {
@@ -64,7 +87,7 @@ const TablaCompras = ({ compras, cargando, abrirModalEdicion, abrirModalEliminac
               <tr key={compra.id_compra}>
                 <td>{compra.id_compra}</td>
                 <td>{compra.id_empleado}</td>
-                <td>{compra.fecha_compra}</td>
+                <td>{formatDate(compra.fecha_compra)}</td>
                 <td>{compra.total_compra}</td>
                 <td>
                   <Button
@@ -88,6 +111,12 @@ const TablaCompras = ({ compras, cargando, abrirModalEdicion, abrirModalEliminac
           })}
         </tbody>
       </Table>
+      <Paginacion
+        elementosPorPagina={elementosPorPagina}
+        totalElementos={totalElementos}
+        paginaActual={paginaActual}
+        establecerPaginaActual={establecerPaginaActual}
+      />
     </>
   );
 };

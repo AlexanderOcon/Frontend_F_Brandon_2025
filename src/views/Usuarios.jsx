@@ -13,6 +13,9 @@ const Usuarios = () => {
   const [usuariosFiltrados, setUsuariosFiltrados] = useState([]);
   const [textoBusqueda, setTextoBusqueda] = useState("");
 
+  const [paginaActual, establecerPaginaActual] = useState(1);
+  const elementosPorPagina = 5;
+
   const [mostrarModal, setMostrarModal] = useState(false);
   const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
   const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
@@ -146,10 +149,17 @@ const Usuarios = () => {
           </Col>
         </Row>
         <TablaUsuarios
-          usuarios={usuariosFiltrados}
+          usuarios={usuariosFiltrados.slice(
+            (paginaActual - 1) * elementosPorPagina,
+            paginaActual * elementosPorPagina
+          )}
           cargando={cargando}
           abrirModalEdicion={abrirModalEdicion}
           abrirModalEliminacion={abrirModalEliminacion}
+          totalElementos={usuarios.length}
+          elementosPorPagina={elementosPorPagina}
+          paginaActual={paginaActual}
+          establecerPaginaActual={establecerPaginaActual}
         />
         <ModalRegistroUsuario
           mostrarModal={mostrarModal}

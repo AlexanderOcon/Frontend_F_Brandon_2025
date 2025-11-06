@@ -1,8 +1,18 @@
 import { Table, Spinner, Button } from "react-bootstrap";
 import { useState } from "react";
 import BotonOrden from "../ordenamiento/BotonOrden";
+import Paginacion from "../ordenamiento/Paginacion";
 
-const TablaClientes = ({ clientes, cargando, abrirModalEdicion, abrirModalEliminacion }) => {
+const TablaClientes = ({
+  clientes,
+  cargando,
+  abrirModalEdicion,
+  abrirModalEliminacion,
+  totalElementos,
+  elementosPorPagina,
+  paginaActual,
+  establecerPaginaActual,
+}) => {
   const [orden, setOrden] = useState({ campo: "id_cliente", direccion: "asc" });
 
   const manejarOrden = (campo) => {
@@ -108,6 +118,12 @@ const TablaClientes = ({ clientes, cargando, abrirModalEdicion, abrirModalElimin
           })}
         </tbody>
       </Table>
+      <Paginacion
+        elementosPorPagina={elementosPorPagina}
+        totalElementos={totalElementos}
+        paginaActual={paginaActual}
+        establecerPaginaActual={establecerPaginaActual}
+      />
     </>
   );
 };

@@ -13,6 +13,9 @@ const Productos = () => {
   const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [textoBusqueda, setTextoBusqueda] = useState("");
 
+  const [paginaActual, establecerPaginaActual] = useState(1);
+  const elementosPorPagina = 5;
+
   const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
   const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
 
@@ -163,10 +166,17 @@ const Productos = () => {
           </Col>
         </Row>
         <TablaProductos
-          productos={productosFiltrados}
+          productos={productosFiltrados.slice(
+            (paginaActual - 1) * elementosPorPagina,
+            paginaActual * elementosPorPagina
+          )}
           cargando={cargando}
           abrirModalEdicion={abrirModalEdicion}
           abrirModalEliminacion={abrirModalEliminacion}
+          totalElementos={productos.length}
+          elementosPorPagina={elementosPorPagina}
+          paginaActual={paginaActual}
+          establecerPaginaActual={establecerPaginaActual}
         />
 
         <ModalRegistroProducto

@@ -13,6 +13,8 @@ const Ventas = () => {
   const [ventasFiltradas, setVentasFiltradas] = useState([]);
   const [textoBusqueda, setTextoBusqueda] = useState("");
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [paginaActual, establecerPaginaActual] = useState(1);
+  const elementosPorPagina = 5;
   
   const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
   const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
@@ -42,7 +44,7 @@ const Ventas = () => {
         body: JSON.stringify(nuevaVenta),
       });
       if (!respuesta.ok) throw new Error("Error al guardar venta");
-      setNuevaVenta({ id_cliente: "", id_empleado: "", fecha_venta: "", total_venta: "", metodo_pago: "", notas: "" });
+      setNuevaVenta({ id_cliente: "", id_empleado: "", fecha_venta: "", total_venta: "" });
       setMostrarModal(false);
       await ObtenerVentas();
     } catch (error) {
@@ -57,8 +59,11 @@ const Ventas = () => {
   };
 
   const guardarEdicion = async () => {
-    if (!ventaEditada?.cliente?.trim()) return;
+    // Validar usando la misma clave que el modal/estado
+    if (!String(ventaEditada?.id_cliente || "").trim()) return;
     try {
+      // Log payload to help debug why the update may fail
+      console.log("guardarEdicion - payload:", ventaEditada);
       const respuesta = await fetch(
         `http://localhost:3000/api/actualizarventa/${ventaEditada.id_venta}`,
         {
@@ -67,7 +72,9 @@ const Ventas = () => {
           body: JSON.stringify(ventaEditada),
         }
       );
+      if (!respuesta.ok) console.warn('guardarEdicion - response status:', respuesta.status);
       if (!respuesta.ok) throw new Error("Error al actualizar venta");
+      // Solo cerrar el modal si la actualización fue exitosa
       setMostrarModalEdicion(false);
       await ObtenerVentas();
     } catch (error) {
@@ -153,10 +160,17 @@ const Ventas = () => {
           </Col>
         </Row>
         <TablaVentas
-          ventas={ventasFiltradas}
+          ventas={ventasFiltradas.slice(
+            (paginaActual - 1) * elementosPorPagina,
+            paginaActual * elementosPorPagina
+          )}
           cargando={cargando}
           abrirModalEdicion={abrirModalEdicion}
           abrirModalEliminacion={abrirModalEliminacion}
+          totalElementos={ventas.length}
+          elementosPorPagina={elementosPorPagina}
+          paginaActual={paginaActual}
+          establecerPaginaActual={establecerPaginaActual}
         />
         <ModalRegistroVenta
           mostrarModal={mostrarModal}

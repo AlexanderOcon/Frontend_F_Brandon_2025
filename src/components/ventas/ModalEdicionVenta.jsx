@@ -24,7 +24,7 @@ const ModalEdicionVenta = ({
             <Form.Control
               type="text"
               name="id_cliente"
-              value={ventaEditada?.id_cliente}
+              value={ventaEditada?.id_cliente || ""}
               onChange={manejarCambio}
               required
               autoFocus
@@ -36,8 +36,19 @@ const ModalEdicionVenta = ({
             <Form.Control
               type="date"
               name="fecha_venta"
-              value={ventaEditada?.fecha_venta}
+              value={ventaEditada?.fecha_venta || ""}
               onChange={manejarCambio}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3" controlId="id_empleado">
+            <Form.Label>Empleado (ID)</Form.Label>
+            <Form.Control
+              type="text"
+              name="id_empleado"
+              value={ventaEditada?.id_empleado || ""}
+              onChange={manejarCambio}
+              required
             />
           </Form.Group>
 
@@ -46,7 +57,7 @@ const ModalEdicionVenta = ({
             <Form.Control
               type="number"
               name="total_venta"
-              value={ventaEditada?.total_venta}
+              value={ventaEditada?.total_venta ?? ""}
               onChange={manejarCambio}
               min={0}
               step="0.01"
@@ -55,10 +66,15 @@ const ModalEdicionVenta = ({
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => setMostrar(false)}>
+        <Button variant="primary" onClick={() => setMostrar(false)}>
           Cancelar
         </Button>
-        <Button variant="primary" onClick={guardarEdicion} disabled={!ventaEditada?.id_cliente?.trim()}>
+        <Button
+          variant="primary"
+          onClick={guardarEdicion}
+          // Coerce to string to avoid errors if id_cliente es number or undefined
+          disabled={!String(ventaEditada?.id_cliente ?? "").trim()}
+        >
           Guardar Cambios
         </Button>
       </Modal.Footer>

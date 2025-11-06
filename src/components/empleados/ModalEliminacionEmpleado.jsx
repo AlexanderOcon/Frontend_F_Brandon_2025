@@ -1,7 +1,11 @@
 import { Modal, Button } from "react-bootstrap";
 
-const ModalEliminacionEmpleado = ({ mostrar, setMostrar, empleado, confirmarEliminacion }) => {
-  const nombre = empleado ? `${empleado.primer_nombre || ""} ${empleado.primer_apellido || ""}`.trim() : "";
+const ModalEliminacionEmpleado = ({
+  mostrar,
+  setMostrar,
+  empleado,
+  confirmarEliminacion,
+}) => {
   return (
     <Modal show={mostrar} onHide={() => setMostrar(false)} centered>
       <Modal.Header closeButton>
@@ -9,9 +13,14 @@ const ModalEliminacionEmpleado = ({ mostrar, setMostrar, empleado, confirmarElim
       </Modal.Header>
       <Modal.Body>
         <p>
-          ¿Estás seguro de que deseas eliminar al empleado <strong>"{nombre || empleado?.cargo || 'este empleado'}"</strong>?
+          ¿Estás seguro de que deseas eliminar al empleado{" "}
+          <strong>
+            {empleado?.primer_nombre} {empleado?.primer_apellido}
+          </strong>?
         </p>
-        <p className="text-muted small">Esta acción no se puede deshacer.</p>
+        <p className="text-muted small">
+          Esta acción no se puede deshacer.
+        </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={() => setMostrar(false)}>
