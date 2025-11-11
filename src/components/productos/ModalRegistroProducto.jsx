@@ -8,7 +8,12 @@ const ModalRegistroProducto = ({
   agregarProducto,
 }) => {
   return (
-    <Modal backdrop="static" show={mostrarModal} onHide={() => setMostrarModal(false)} centered>
+    <Modal
+      backdrop="static"
+      show={mostrarModal}
+      onHide={() => setMostrarModal(false)}
+      centered
+    >
       <Modal.Header closeButton>
         <Modal.Title>Agregar Nuevo Producto</Modal.Title>
       </Modal.Header>
@@ -83,17 +88,34 @@ const ModalRegistroProducto = ({
             />
           </Form.Group>
 
-          <Form.Group className="mb-3" controlId="imagen">
-            <Form.Label>Imagen (URL)</Form.Label>
+          <Form.Group className="mb-3" controlId="formImagenProducto">
+            <Form.Label>Imagen</Form.Label>
             <Form.Control
-              type="text"
+              type="file"
               name="imagen"
-              value={nuevoProducto.imagen}
-              onChange={manejarCambioInput}
-              placeholder="https://..."
-              maxLength={300}
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    manejarCambioInput({
+                      target: {
+                        name: "imagen",
+                        value: reader.result.split(",")[1],
+                      }, // Extrae solo la parte Base64
+                    });
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
             />
           </Form.Group>
+
+        
+
+
+
         </Form>
       </Modal.Body>
       <Modal.Footer>

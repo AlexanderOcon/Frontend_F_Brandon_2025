@@ -90,20 +90,36 @@ const TablaProductos = ({
                 <td>{producto.id_categoria}</td>
                 <td>{producto.precio_unitario}</td>
                 <td>{producto.stock}</td>
-                <td>{producto.imagen}</td>
+                <td>
+                  {producto.imagen ? (
+                    <img
+                      src={`data:image/png;base64,${producto.imagen}`}
+                      alt={producto.nombre_producto}
+                      width={50}
+                      height={50}
+                      style={{ objectFit: "cover" }}
+                    />
+                  ) : (
+                    "Sin imagen"
+                  )}
+                </td>
                 <td>
                   <Button
                     variant="outline-warning"
                     size="sm"
                     className="me-2"
-                    onClick={() => abrirModalEdicion && abrirModalEdicion(producto)}
+                    onClick={() =>
+                      abrirModalEdicion && abrirModalEdicion(producto)
+                    }
                   >
                     <i className="bi bi-pencil"></i>
                   </Button>
                   <Button
                     variant="outline-danger"
                     size="sm"
-                    onClick={() => abrirModalEliminacion && abrirModalEliminacion(producto)}
+                    onClick={() =>
+                      abrirModalEliminacion && abrirModalEliminacion(producto)
+                    }
                   >
                     <i className="bi bi-trash"></i>
                   </Button>

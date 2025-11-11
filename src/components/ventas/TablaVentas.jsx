@@ -1,127 +1,62 @@
-import { Table, Spinner, Button } from "react-bootstrap";
-import { useState } from "react";
-import BotonOrden from "../ordenamiento/BotonOrden";
-import Paginacion from "../ordenamiento/Paginacion";
-
-// Formatea fechas en estilo local corto (ej: 04/11/2025) sin modificar los datos
-const formatDate = (dateStr) => {
-  if (!dateStr) return "-";
-  try {
-    return new Date(dateStr).toLocaleString("es-NI", {
-      timeZone: "America/Managua",
-      dateStyle: "short",
-    });
-  } catch {
-    return dateStr;
-  }
-};
+import { Table, Button, Pagination } from 'react-bootstrap';
 
 const TablaVentas = ({
-  ventas,
-  cargando,
-  abrirModalEdicion,
-  abrirModalEliminacion,
-  totalElementos,
-  elementosPorPagina,
-  paginaActual,
-  establecerPaginaActual,
+  ventas, cargando, obtenerDetalles, abrirModalEdicion,
+  abrirModalEliminacion, totalElementos, elementosPorPagina,
+  paginaActual, establecerPaginaActual
 }) => {
-  const [orden, setOrden] = useState({ campo: "id_venta", direccion: "asc" });
+  if (cargando) return <div className="text-center">Cargando ventas...</div>;
 
-  const manejarOrden = (campo) => {
-    setOrden((prev) => ({
-      campo,
-      direccion: prev.campo === campo && prev.direccion === "asc" ? "desc" : "asc",
-    }));
-  };
-
-  const ventasOrdenadas = [...ventas].sort((a, b) => {
-    const valorA = a[orden.campo];
-    const valorB = b[orden.campo];
-
-    if (typeof valorA === "number" && typeof valorB === "number") {
-      return orden.direccion === "asc" ? valorA - valorB : valorB - valorA;
-    }
-
-    const comparacion = String(valorA ?? "").localeCompare(String(valorB ?? ""));
-    return orden.direccion === "asc" ? comparacion : -comparacion;
-  });
-
-  if (cargando) {
-    return (
-      <>
-        <Spinner animation="border">
-          <span className="visually-hidden">Cargando...</span>
-        </Spinner>
-      </>
-    );
-  }
+  const totalPaginas = Math.ceil(totalElementos / elementosPorPagina);
 
   return (
     <>
-      <Table striped bordered hover>
+      <Table striped bordered hover responsive className="mt-3">
         <thead>
           <tr>
-            <BotonOrden campo="id_venta" orden={orden} manejarOrden={manejarOrden}>
-              ID
-            </BotonOrden>
-
-            <BotonOrden campo="id_cliente" orden={orden} manejarOrden={manejarOrden}>
-              ID Cliente
-            </BotonOrden>
-
-            <BotonOrden campo="id_empleado" orden={orden} manejarOrden={manejarOrden}>
-              ID Empleado
-            </BotonOrden>
-
-            <BotonOrden campo="fecha_venta" orden={orden} manejarOrden={manejarOrden}>
-              Fecha Venta
-            </BotonOrden>
-
-            <BotonOrden campo="total_venta" orden={orden} manejarOrden={manejarOrden}>
-              Total Venta
-            </BotonOrden>
-
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Empleado</th>
+            <th>Total</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {ventasOrdenadas.map((venta) => {
-            return (
-              <tr key={venta.id_venta}>
-                <td>{venta.id_venta}</td>
-                <td>{venta.id_cliente}</td>
-                <td>{venta.id_empleado}</td>
-                <td>{formatDate(venta.fecha_venta)}</td>
-                <td>{venta.total_venta}</td>
-                <td>
-                  <Button
-                    variant="outline-warning"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => abrirModalEdicion(venta)}
-                  >
-                    <i className="bi bi-pencil"></i>
-                  </Button>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    onClick={() => abrirModalEliminacion(venta)}
-                  >
-                    <i className="bi bi-trash"></i>
-                  </Button>
-                </td>
-              </tr>
-            );
-          })}
+          {ventas.map((v) => (
+            <tr key={v.id_venta}>
+              <td>{v.id_venta}</td>
+              <td>{new Date(v.fecha_venta).toLocaleString()}</td>
+              <td>{v.nombre_cliente}</td>
+              <td>{v.nombre_empleado}</td>
+              <td>C$ {parseFloat(v.total_venta).toFixed(2)}</td>
+              <td>
+                <Button size="sm" variant="outline-info" onClick={() => obtenerDetalles(v.id_venta)}>
+                  Detalles
+                </Button>{' '}
+                <Button size="sm" variant="outline-warning" onClick={() => abrirModalEdicion(v)}>
+                  Editar
+                </Button>{' '}
+                <Button size="sm" variant="outline-danger" onClick={() => abrirModalEliminacion(v)}>
+                  Eliminar
+                </Button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </Table>
-      <Paginacion
-        elementosPorPagina={elementosPorPagina}
-        totalElementos={totalElementos}
-        paginaActual={paginaActual}
-        establecerPaginaActual={establecerPaginaActual}
-      />
+
+      <Pagination>
+        {[...Array(totalPaginas)].map((_, i) => (
+          <Pagination.Item
+            key={i + 1}
+            active={i + 1 === paginaActual}
+            onClick={() => establecerPaginaActual(i + 1)}
+          >
+            {i + 1}
+          </Pagination.Item>
+        ))}
+      </Pagination>
     </>
   );
 };
