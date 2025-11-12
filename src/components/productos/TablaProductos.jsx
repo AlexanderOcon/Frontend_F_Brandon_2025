@@ -2,6 +2,7 @@ import { Table, Spinner, Button } from "react-bootstrap";
 import { useState } from "react";
 import BotonOrden from "../ordenamiento/BotonOrden";
 import Paginacion from "../ordenamiento/Paginacion";
+//import { generarPDFDetalleProducto } from "../../utils/reportesPDF";
 
 const TablaProductos = ({
   productos,
