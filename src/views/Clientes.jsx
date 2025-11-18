@@ -5,6 +5,8 @@ import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 import ModalRegistroCliente from "../components/clientes/ModalRegistroCliente";
 import ModalEdicionCliente from "../components/clientes/ModalEdicionCliente";
 import ModalEliminacionCliente from "../components/clientes/ModalEliminacionCliente";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -147,6 +149,34 @@ const Clientes = () => {
     obtenerClientes();
   }, []);
 
+  const generarPDFClientes = () => {
+    const doc = new jsPDF();
+    const columnas = ["ID", "Nombre", "Celular", "Cédula", "Dirección"];
+    const filas = clientesFiltrados.map((c) => [
+      c.id_cliente ?? '',
+      `${c.primer_nombre ?? ''} ${c.primer_apellido ?? ''}`.trim(),
+      c.celular ?? '',
+      c.cedula ?? '',
+      c.direccion ?? ''
+    ]);
+
+    try {
+      if (typeof autoTable === 'function') {
+        autoTable(doc, { head: [columnas], body: filas, startY: 20 });
+      } else if (typeof doc.autoTable === 'function') {
+        doc.autoTable({ head: [columnas], body: filas, startY: 20 });
+      } else {
+        console.error('autoTable no disponible');
+      }
+    } catch (err) {
+      console.error('Error generating PDF clientes', err, filas);
+    }
+
+    const fecha = new Date();
+    const nombreArchivo = `clientes_${fecha.getFullYear()}${String(fecha.getMonth()+1).padStart(2,'0')}${String(fecha.getDate()).padStart(2,'0')}.pdf`;
+    doc.save(nombreArchivo);
+  };
+
   return (
     <>
       <Container className="mt-4">
@@ -159,6 +189,9 @@ const Clientes = () => {
             />
           </Col>
           <Col className="text-end">
+            <Button className="me-2" variant="secondary" onClick={generarPDFClientes}>
+              Generar reporte PDF
+            </Button>
             <Button className="color-boton-registro" onClick={() => setMostrarModal(true)}>
               + Nuevo Cliente
             </Button>

@@ -5,6 +5,8 @@ import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 import ModalRegistroCompra from "../components/compras/ModalRegistroCompra";
 import ModalEdicionCompra from "../components/compras/ModalEdicionCompra";
 import ModalEliminacionCompra from "../components/compras/ModalEliminacionCompra";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const Compras = () => {
   const [compras, setCompras] = useState([]);
@@ -143,6 +145,31 @@ const Compras = () => {
     obtenerCompras();
   }, []);
 
+  const generarPDFCompras = () => {
+    const doc = new jsPDF();
+    const columnas = ["ID", "Empleado", "Fecha", "Total"];
+    const filas = comprasFiltradas.map((c) => [
+      c.id_compra ?? '',
+      c.id_empleado ?? '',
+      c.fecha_compra ?? '',
+      `C$ ${Number(c.total_compra ?? 0)}`
+    ]);
+
+    try {
+      if (typeof autoTable === 'function') {
+        autoTable(doc, { head: [columnas], body: filas, startY: 20 });
+      } else if (typeof doc.autoTable === 'function') {
+        doc.autoTable({ head: [columnas], body: filas, startY: 20 });
+      }
+    } catch (err) {
+      console.error('Error generating PDF compras', err, filas);
+    }
+
+    const fecha = new Date();
+    const nombreArchivo = `compras_${fecha.getFullYear()}${String(fecha.getMonth()+1).padStart(2,'0')}${String(fecha.getDate()).padStart(2,'0')}.pdf`;
+    doc.save(nombreArchivo);
+  };
+
   return (
     <>
       <Container className="mt-4">
@@ -155,6 +182,9 @@ const Compras = () => {
             />
           </Col>
           <Col className="text-end">
+            <Button className="me-2" variant="secondary" onClick={generarPDFCompras}>
+              Generar reporte PDF
+            </Button>
             <Button className="color-boton-registro" onClick={() => setMostrarModal(true)}>
               + Nuevo Compra
             </Button>

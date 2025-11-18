@@ -5,6 +5,8 @@ import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 import ModalRegistroCategoria from "../components/categorias/ModalRegistroCategoria";
 import ModalEdicionCategoria from "../components/categorias/ModalEdicionCategoria";
 import ModalEliminacionCategoria from "../components/categorias/ModalEliminacionCategoria";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const Categorias = () => {
   const [categorias, setCategorias] = useState([]);
@@ -145,6 +147,26 @@ const categoriasPaginadas = categoriasFiltradas.slice(
     obtenerCategorias();
   }, []);
 
+  const generarPDFCategorias = () => {
+    const doc = new jsPDF();
+    const columnas = ["ID", "Nombre", "Descripción"];
+    const filas = categoriasFiltradas.map(cat => [cat.id_categoria ?? '', cat.nombre_categoria ?? '', cat.descripcion_categoria ?? '']);
+
+    try {
+      if (typeof autoTable === 'function') {
+        autoTable(doc, { head: [columnas], body: filas, startY: 20 });
+      } else if (typeof doc.autoTable === 'function') {
+        doc.autoTable({ head: [columnas], body: filas, startY: 20 });
+      }
+    } catch (err) {
+      console.error('Error generating PDF categorias', err, filas);
+    }
+
+    const fecha = new Date();
+    const nombreArchivo = `categorias_${fecha.getFullYear()}${String(fecha.getMonth()+1).padStart(2,'0')}${String(fecha.getDate()).padStart(2,'0')}.pdf`;
+    doc.save(nombreArchivo);
+  };
+
   return (
     <>
       <Container className="mt-4">
@@ -157,6 +179,9 @@ const categoriasPaginadas = categoriasFiltradas.slice(
             />
           </Col>
           <Col className="text-end">
+            <Button className="me-2" variant="secondary" onClick={generarPDFCategorias}>
+              Generar reporte PDF
+            </Button>
             <Button
               className="color-boton-registro"
               onClick={() => setMostrarModal(true)}

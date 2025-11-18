@@ -5,6 +5,8 @@ import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 import ModalRegistroUsuario from "../components/usuarios/ModalRegistroUsuario";
 import ModalEdicionUsuario from "../components/usuarios/ModalEdicionUsuario";
 import ModalEliminacionUsuario from "../components/usuarios/ModalEliminacionUsuario";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const Usuarios = () => {
   const [usuarios, setusuarios] = useState([]);
@@ -128,6 +130,26 @@ const Usuarios = () => {
   useEffect(() => {
     obtenerUsuarios();
   }, []);
+
+  const generarPDFUsuarios = () => {
+    const doc = new jsPDF();
+    const columnas = ["ID", "Usuario"];
+    const filas = usuariosFiltrados.map(u => [u.id_usuario ?? '', u.usuario ?? '']);
+
+    try {
+      if (typeof autoTable === 'function') {
+        autoTable(doc, { head: [columnas], body: filas, startY: 20 });
+      } else if (typeof doc.autoTable === 'function') {
+        doc.autoTable({ head: [columnas], body: filas, startY: 20 });
+      }
+    } catch (err) {
+      console.error('Error generating PDF usuarios', err, filas);
+    }
+
+    const fecha = new Date();
+    const nombreArchivo = `usuarios_${fecha.getFullYear()}${String(fecha.getMonth()+1).padStart(2,'0')}${String(fecha.getDate()).padStart(2,'0')}.pdf`;
+    doc.save(nombreArchivo);
+  };
   return (
     <>
       <Container className="mt-4">
@@ -140,6 +162,9 @@ const Usuarios = () => {
             />
           </Col>
           <Col className="text-end">
+            <Button className="me-2" variant="secondary" onClick={generarPDFUsuarios}>
+              Generar reporte PDF
+            </Button>
             <Button
               className="color-boton-registro"
               onClick={() => setMostrarModal(true)}

@@ -77,7 +77,7 @@ autoTable(doc, {
   pageBreak: "auto",
   rowPageBreak: "auto",
   // Hook que se ejecuta al dibujar cada página
-  didDrawPage: function (data) {
+  didDrawPage: function () {
     // Altura y ancho de la página actual
     const alturaPagina = doc.internal.pageSize.getHeight();
     const anchoPagina = doc.internal.pageSize.getWidth();

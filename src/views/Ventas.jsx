@@ -6,6 +6,8 @@ import ModalRegistroVenta from '../components/ventas/ModalRegistroVenta';
 import ModalEdicionVenta from '../components/ventas/ModalEdicionVenta';
 import ModalEliminacionVenta from '../components/ventas/ModalEliminacionVenta';
 import ModalDetallesVenta from '../components/detalles_ventas/ModalDetallesVentas';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Ventas = () => {
   const [ventas, setVentas] = useState([]);
@@ -314,6 +316,32 @@ const Ventas = () => {
     obtenerProductos();
   }, []);
 
+  const generarPDFVentas = () => {
+    const doc = new jsPDF();
+    const columnas = ["ID", "Cliente", "Empleado", "Fecha", "Total"];
+    const filas = ventasFiltradas.map(v => [
+      v.id_venta ?? '',
+      v.nombre_cliente ?? '',
+      v.nombre_empleado ?? '',
+      v.fecha_venta ?? '',
+      `C$ ${Number(v.total_venta ?? 0)}`
+    ]);
+
+    try {
+      if (typeof autoTable === 'function') {
+        autoTable(doc, { head: [columnas], body: filas, startY: 20 });
+      } else if (typeof doc.autoTable === 'function') {
+        doc.autoTable({ head: [columnas], body: filas, startY: 20 });
+      }
+    } catch (err) {
+      console.error('Error generating PDF ventas', err, filas);
+    }
+
+    const fecha = new Date();
+    const nombreArchivo = `ventas_${fecha.getFullYear()}${String(fecha.getMonth()+1).padStart(2,'0')}${String(fecha.getDate()).padStart(2,'0')}.pdf`;
+    doc.save(nombreArchivo);
+  };
+
   return (
     <Container className="mt-4">
       <h4>Ventas</h4>
@@ -325,6 +353,9 @@ const Ventas = () => {
           />
         </Col>
         <Col className="text-end">
+          <Button className="me-2" variant="secondary" onClick={generarPDFVentas}>
+            Generar reporte PDF
+          </Button>
           <Button className="color-boton-registro" onClick={() => setMostrarModalRegistro(true)}>
             + Nueva Venta
           </Button>

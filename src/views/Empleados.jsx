@@ -5,6 +5,8 @@ import CuadroBusquedas from '../components/busquedas/CuadroBusquedas';
 import ModalRegistroEmpleado from '../components/empleados/ModalRegistroEmpleado';
 import ModalEdicionEmpleado from '../components/empleados/ModalEdicionEmpleado';
 import ModalEliminacionEmpleado from '../components/empleados/ModalEliminacionEmpleado';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Empleados = () => {
   const [empleados, setEmpleados] = useState([]);
@@ -139,6 +141,32 @@ const Empleados = () => {
     obtenerEmpleados();
   }, []);
 
+  const generarPDFEmpleados = () => {
+    const doc = new jsPDF();
+    const columnas = ["ID", "Nombre", "Cargo", "Celular", "Fecha contratación"];
+    const filas = empleadosFiltrados.map(emp => [
+      emp.id_empleado ?? '',
+      `${emp.primer_nombre ?? ''} ${emp.primer_apellido ?? ''}`.trim(),
+      emp.cargo ?? '',
+      emp.celular ?? '',
+      emp.fecha_contratacion ?? ''
+    ]);
+
+    try {
+      if (typeof autoTable === 'function') {
+        autoTable(doc, { head: [columnas], body: filas, startY: 20 });
+      } else if (typeof doc.autoTable === 'function') {
+        doc.autoTable({ head: [columnas], body: filas, startY: 20 });
+      }
+    } catch (err) {
+      console.error('Error generating PDF empleados', err, filas);
+    }
+
+    const fecha = new Date();
+    const nombreArchivo = `empleados_${fecha.getFullYear()}${String(fecha.getMonth()+1).padStart(2,'0')}${String(fecha.getDate()).padStart(2,'0')}.pdf`;
+    doc.save(nombreArchivo);
+  };
+
   return (
     <>
       <Container className="mt-4">
@@ -151,6 +179,9 @@ const Empleados = () => {
             />
           </Col>
           <Col className="text-end">
+            <Button className="me-2" variant="secondary" onClick={generarPDFEmpleados}>
+              Generar reporte PDF
+            </Button>
             <Button
               className='color-boton-registro'
               onClick={() => setMostrarModal(true)}
