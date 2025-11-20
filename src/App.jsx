@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 // Importar componente Encabezado
 import Encabezado from "./components/navegacion/Encabezado";
 // Importar las vistas
@@ -12,30 +12,42 @@ import Clientes from "./views/Clientes";
 import Empleados from "./views/Empleados";
 import Compras from "./views/Compras";
 import Usuarios from "./views/Usuarios";
+import Estadisticas from "./views/Estadisticas.jsx";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 // Importar archivo de estilos
 import "./App.css";
 
 const App = () => {
   return (
     <Router>
-      <Encabezado />
-      <main className="margen-superior-main">
-        <Routes>
-          <Route path="/" element={<Inicio />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/categorias" element={<Categorias />} />
-          <Route path="/productos" element={<Productos />} />
-          <Route path="/catalogo" element={<Catalogos />} />
-          <Route path="/clientes" element={<Clientes />} /> 
-          <Route path="/compras" element={<Compras />} /> 
-          <Route path="/empleados" element={<Empleados />} />
-          <Route path="/ventas" element={<Ventas />} />
-          <Route path="/usuarios" element={<Usuarios />} />  
-          <Route path="*" element={<h2>404 - Página no encontrada</h2>} />
-        </Routes>
-      </main>
+      <AuthProvider>
+        <Encabezado />
+        <main className="margen-superior-main">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+
+            <Route path="/" element={<PrivateRoute><Inicio /></PrivateRoute>} />
+            <Route path="/categorias" element={<PrivateRoute><Categorias /></PrivateRoute>} />
+            <Route path="/productos" element={<PrivateRoute><Productos /></PrivateRoute>} />
+            <Route path="/catalogo" element={<PrivateRoute><Catalogos /></PrivateRoute>} />
+            <Route path="/clientes" element={<PrivateRoute><Clientes /></PrivateRoute>} /> 
+            <Route path="/compras" element={<PrivateRoute><Compras /></PrivateRoute>} /> 
+            <Route path="/empleados" element={<PrivateRoute><Empleados /></PrivateRoute>} />
+            <Route path="/ventas" element={<PrivateRoute><Ventas /></PrivateRoute>} />
+            <Route path="/usuarios" element={<PrivateRoute><Usuarios /></PrivateRoute>} />
+            <Route path="/estadisticas" element={<PrivateRoute><Estadisticas /></PrivateRoute>} />
+            <Route path="*" element={<PrivateRoute><h2>404 - Página no encontrada</h2></PrivateRoute>} />
+          </Routes>
+        </main>
+      </AuthProvider>
     </Router>
   );
+};
+
+const PrivateRoute = ({ children }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+  return user ? children : <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default App;

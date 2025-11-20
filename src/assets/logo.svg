@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
+  <rect width="200" height="60" rx="8" fill="#0d6efd" />
+  <g fill="#fff" transform="translate(12,10)">
+    <path d="M10 0 L18 0 L30 12 L26 16 L14 4 L12 6 L4 6 L4 0 Z" opacity="0.9" />
+    <text x="48" y="28" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">Ferretería</text>
+    <text x="48" y="46" font-family="Arial, Helvetica, sans-serif" font-size="13">El Pez Cuezón</text>
+  </g>
+</svg>

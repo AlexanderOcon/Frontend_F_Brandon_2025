@@ -29,7 +29,7 @@ const CatalogoProductos = () => {
   return (
     <Container className="mt-5">
       <h4>Catálogo de Productos</h4>
-      <Row>
+      <Row className="g-3">
         {listaProductos.map((producto, indice) => (
           <Tarjeta
             key={producto.id_producto}
