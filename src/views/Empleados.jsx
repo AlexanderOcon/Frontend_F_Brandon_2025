@@ -7,6 +7,7 @@ import ModalEdicionEmpleado from '../components/empleados/ModalEdicionEmpleado';
 import ModalEliminacionEmpleado from '../components/empleados/ModalEliminacionEmpleado';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { supabase } from "../supabaseClient";
 
 const Empleados = () => {
   const [empleados, setEmpleados] = useState([]);
@@ -47,12 +48,8 @@ const Empleados = () => {
   const agregarEmpleado = async () => {
     if (!nuevoEmpleado.primer_nombre.trim() || !nuevoEmpleado.primer_apellido.trim()) return;
     try {
-      const respuesta = await fetch('http://localhost:3000/api/registrarempleado', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(nuevoEmpleado)
-      });
-      if (!respuesta.ok) throw new Error('Error al guardar');
+      const { error } = await supabase.from('empleados').insert([nuevoEmpleado]);
+      if (error) throw error;
       setNuevoEmpleado({
         primer_nombre: '',
         segundo_nombre: '',
@@ -72,11 +69,10 @@ const Empleados = () => {
 
   const obtenerEmpleados = async () => {
     try {
-      const respuesta = await fetch('http://localhost:3000/api/empleados');
-      if (!respuesta.ok) throw new Error('Error al obtener empleados');
-      const datos = await respuesta.json();
-      setEmpleados(datos);
-      setEmpleadosFiltrados(datos);
+      const { data, error } = await supabase.from('empleados').select('*');
+      if (error) throw error;
+      setEmpleados(data);
+      setEmpleadosFiltrados(data);
       setCargando(false);
     } catch (error) {
       console.error(error.message);
@@ -103,12 +99,11 @@ const Empleados = () => {
   const guardarEdicion = async () => {
     if (!empleadoEditado.primer_nombre.trim() || !empleadoEditado.primer_apellido.trim()) return;
     try {
-      const respuesta = await fetch(`http://localhost:3000/api/actualizarempleado/${empleadoEditado.id_empleado}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(empleadoEditado)
-      });
-      if (!respuesta.ok) throw new Error('Error al actualizar');
+      const { error } = await supabase
+        .from('empleados')
+        .update(empleadoEditado)
+        .eq('id_empleado', empleadoEditado.id_empleado);
+      if (error) throw error;
       setMostrarModalEdicion(false);
       await obtenerEmpleados();
     } catch (error) {
@@ -124,10 +119,11 @@ const Empleados = () => {
 
   const confirmarEliminacion = async () => {
     try {
-      const respuesta = await fetch(`http://localhost:3000/api/eliminarempleado/${empleadoAEliminar.id_empleado}`, {
-        method: 'DELETE',
-      });
-      if (!respuesta.ok) throw new Error('Error al eliminar');
+      const { error } = await supabase
+        .from('empleados')
+        .delete()
+        .eq('id_empleado', empleadoAEliminar.id_empleado);
+      if (error) throw error;
       setMostrarModalEliminar(false);
       setEmpleadoAEliminar(null);
       await obtenerEmpleados();

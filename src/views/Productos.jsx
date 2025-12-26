@@ -7,6 +7,7 @@ import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 import ModalRegistroProducto from "../components/productos/ModalRegistroProducto";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { supabase } from "../supabaseClient";
 
 const Productos = () => {
   const [productos, setproductos] = useState([]);
@@ -26,14 +27,10 @@ const Productos = () => {
 
   const obtenerProductos = async () => {
     try {
-      const respuesta = await fetch("http://localhost:3000/api/productos");
-      if (!respuesta.ok) {
-        throw new Error("Error al obtener los productos");
-      }
-
-      const datos = await respuesta.json();
-      setproductos(datos);
-      setProductosFiltrados(datos);
+      const { data, error } = await supabase.from('productos').select('*');
+      if (error) throw error;
+      setproductos(data);
+      setProductosFiltrados(data);
       setCargando(false);
     } catch (error) {
       console.log(error.message);
@@ -141,12 +138,8 @@ doc.save(nombreArchivo);
   const agregarProducto = async () => {
     if (!nuevoProducto.nombre_producto.trim()) return;
     try {
-      const respuesta = await fetch("http://localhost:3000/api/registrarproducto", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevoProducto),
-      });
-      if (!respuesta.ok) throw new Error("Error al guardar producto");
+      const { error } = await supabase.from('productos').insert([nuevoProducto]);
+      if (error) throw error;
       // Limpiar y cerrar
       setNuevoProducto({
         nombre_producto: "",
@@ -172,15 +165,11 @@ doc.save(nombreArchivo);
   const guardarEdicion = async () => {
     if (!productoEditado.nombre_producto.trim()) return;
     try {
-      const respuesta = await fetch(
-        `http://localhost:3000/api/actualizarproducto/${productoEditado.id_producto}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(productoEditado),
-        }
-      );
-      if (!respuesta.ok) throw new Error("Error al actualizar producto");
+      const { error } = await supabase
+        .from('productos')
+        .update(productoEditado)
+        .eq('id_producto', productoEditado.id_producto);
+      if (error) throw error;
       setMostrarModalEdicion(false);
       await obtenerProductos();
     } catch (error) {
@@ -196,13 +185,11 @@ doc.save(nombreArchivo);
 
   const confirmarEliminacion = async () => {
     try {
-      const respuesta = await fetch(
-        `http://localhost:3000/api/eliminarproducto/${productoAEliminar.id_producto}`,
-        {
-          method: "DELETE",
-        }
-      );
-      if (!respuesta.ok) throw new Error("Error al eliminar producto");
+      const { error } = await supabase
+        .from('productos')
+        .delete()
+        .eq('id_producto', productoAEliminar.id_producto);
+      if (error) throw error;
       setMostrarModalEliminar(false);
       setProductoAEliminar(null);
       await obtenerProductos();

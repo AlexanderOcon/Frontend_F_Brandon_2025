@@ -7,6 +7,7 @@ import ModalEdicionUsuario from "../components/usuarios/ModalEdicionUsuario";
 import ModalEliminacionUsuario from "../components/usuarios/ModalEliminacionUsuario";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { supabase } from "../supabaseClient";
 
 const Usuarios = () => {
   const [usuarios, setusuarios] = useState([]);
@@ -37,15 +38,8 @@ const Usuarios = () => {
   const agregarUsuario = async () => {
     if (!nuevoUsuario.usuario.trim()) return;
     try {
-      const respuesta = await fetch(
-        "http://localhost:3000/api/registrarusuario",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(nuevoUsuario),
-        }
-      );
-      if (!respuesta.ok) throw new Error("Error al guardar");
+      const { error } = await supabase.from('usuarios').insert([nuevoUsuario]);
+      if (error) throw error;
       // Limpiar y cerrar
       setNuevoUsuario({ usuario: "", contraseña: "" });
       setMostrarModal(false);
@@ -64,15 +58,11 @@ const Usuarios = () => {
   const guardarEdicion = async () => {
     if (!usuarioEditado?.usuario?.trim()) return;
     try {
-      const respuesta = await fetch(
-        `http://localhost:3000/api/actualizarusuario/${usuarioEditado.id_usuario}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(usuarioEditado),
-        }
-      );
-      if (!respuesta.ok) throw new Error("Error al actualizar usuario");
+      const { error } = await supabase
+        .from('usuarios')
+        .update(usuarioEditado)
+        .eq('id_usuario', usuarioEditado.id_usuario);
+      if (error) throw error;
       setMostrarModalEdicion(false);
       await obtenerUsuarios();
     } catch (error) {
@@ -88,11 +78,11 @@ const Usuarios = () => {
 
   const confirmarEliminacion = async () => {
     try {
-      const respuesta = await fetch(
-        `http://localhost:3000/api/eliminarusuario/${usuarioAEliminar.id_usuario}`,
-        { method: "DELETE" }
-      );
-      if (!respuesta.ok) throw new Error("Error al eliminar usuario");
+      const { error } = await supabase
+        .from('usuarios')
+        .delete()
+        .eq('id_usuario', usuarioAEliminar.id_usuario);
+      if (error) throw error;
       setMostrarModalEliminar(false);
       setUsuarioAEliminar(null);
       await obtenerUsuarios();
@@ -104,13 +94,10 @@ const Usuarios = () => {
 
   const obtenerUsuarios = async () => {
     try {
-      const respuesta = await fetch("http://localhost:3000/api/usuarios");
-      if (!respuesta.ok) {
-        throw new Error("Error al obtener los usuarios");
-      }
-      const datos = await respuesta.json();
-      setusuarios(datos);
-      setUsuariosFiltrados(datos);
+      const { data, error } = await supabase.from('usuarios').select('*');
+      if (error) throw error;
+      setusuarios(data);
+      setUsuariosFiltrados(data);
       setCargando(false);
     } catch (error) {
       console.log(error.message);

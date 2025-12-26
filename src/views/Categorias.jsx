@@ -7,6 +7,7 @@ import ModalEdicionCategoria from "../components/categorias/ModalEdicionCategori
 import ModalEliminacionCategoria from "../components/categorias/ModalEliminacionCategoria";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { supabase } from "../supabaseClient";
 
 const Categorias = () => {
   const [categorias, setCategorias] = useState([]);
@@ -48,15 +49,11 @@ const categoriasPaginadas = categoriasFiltradas.slice(
   const guardarEdicion = async () => {
     if (!categoriaEditada.nombre_categoria.trim()) return;
     try {
-      const respuesta = await fetch(
-        `http://localhost:3000/api/actualizarcategoria/${categoriaEditada.id_categoria}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(categoriaEditada),
-        }
-      );
-      if (!respuesta.ok) throw new Error("Error al actualizar");
+      const { error } = await supabase
+        .from('categorias')
+        .update(categoriaEditada)
+        .eq('id_categoria', categoriaEditada.id_categoria);
+      if (error) throw error;
       setMostrarModalEdicion(false);
       await obtenerCategorias();
     } catch (error) {
@@ -72,13 +69,11 @@ const categoriasPaginadas = categoriasFiltradas.slice(
 
   const confirmarEliminacion = async () => {
     try {
-      const respuesta = await fetch(
-        `http://localhost:3000/api/eliminarcategoria/${categoriaAEliminar.id_categoria}`,
-        {
-          method: "DELETE",
-        }
-      );
-      if (!respuesta.ok) throw new Error("Error al eliminar");
+      const { error } = await supabase
+        .from('categorias')
+        .delete()
+        .eq('id_categoria', categoriaAEliminar.id_categoria);
+      if (error) throw error;
       setMostrarModalEliminar(false);
       setCategoriaAEliminar(null);
       await obtenerCategorias();
@@ -96,15 +91,8 @@ const categoriasPaginadas = categoriasFiltradas.slice(
   const agregarCategoria = async () => {
     if (!nuevaCategoria.nombre_categoria.trim()) return;
     try {
-      const respuesta = await fetch(
-        "http://localhost:3000/api/registrarcategoria",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(nuevaCategoria),
-        }
-      );
-      if (!respuesta.ok) throw new Error("Error al guardar");
+      const { error } = await supabase.from('categorias').insert([nuevaCategoria]);
+      if (error) throw error;
       // Limpiar y cerrar
       setNuevaCategoria({ nombre_categoria: "", descripcion_categoria: "" });
       setMostrarModal(false);
@@ -117,13 +105,10 @@ const categoriasPaginadas = categoriasFiltradas.slice(
 
   const obtenerCategorias = async () => {
     try {
-      const respuesta = await fetch("http://localhost:3000/api/categorias");
-      if (!respuesta.ok) {
-        throw new Error("Error al obtener las categorias");
-      }
-      const datos = await respuesta.json();
-      setCategorias(datos);
-      setCategoriasFiltradas(datos);
+      const { data, error } = await supabase.from('categorias').select('*');
+      if (error) throw error;
+      setCategorias(data);
+      setCategoriasFiltradas(data);
       setCargando(false);
     } catch (error) {
       console.error(error.message);

@@ -7,6 +7,7 @@ import ModalEdicionCliente from "../components/clientes/ModalEdicionCliente";
 import ModalEliminacionCliente from "../components/clientes/ModalEliminacionCliente";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { supabase } from "../supabaseClient";
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -47,15 +48,11 @@ const Clientes = () => {
   const guardarEdicion = async () => {
     if (!clienteEditado?.primer_nombre?.trim()) return;
     try {
-      const respuesta = await fetch(
-        `http://localhost:3000/api/actualizarCliente/${clienteEditado.id_cliente}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(clienteEditado),
-        }
-      );
-      if (!respuesta.ok) throw new Error("Error al actualizar cliente");
+      const { error } = await supabase
+        .from('clientes')
+        .update(clienteEditado)
+        .eq('id_cliente', clienteEditado.id_cliente);
+      if (error) throw error;
       setMostrarModalEdicion(false);
       await obtenerClientes();
     } catch (error) {
@@ -71,11 +68,11 @@ const Clientes = () => {
 
   const confirmarEliminacion = async () => {
     try {
-      const respuesta = await fetch(
-        `http://localhost:3000/api/eliminarcliente/${clienteAEliminar.id_cliente}`,
-        { method: "DELETE" }
-      );
-      if (!respuesta.ok) throw new Error("Error al eliminar cliente");
+      const { error } = await supabase
+        .from('clientes')
+        .delete()
+        .eq('id_cliente', clienteAEliminar.id_cliente);
+      if (error) throw error;
       setMostrarModalEliminar(false);
       setClienteAEliminar(null);
       await obtenerClientes();
@@ -88,12 +85,8 @@ const Clientes = () => {
   const agregarCliente = async () => {
     if (!nuevoCliente.primer_nombre.trim()) return;
     try {
-      const respuesta = await fetch("http://localhost:3000/api/registrarcliente", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevoCliente),
-      });
-      if (!respuesta.ok) throw new Error("Error al guardar cliente");
+      const { error } = await supabase.from('clientes').insert([nuevoCliente]);
+      if (error) throw error;
       // Limpiar y cerrar
       setNuevoCliente({
         primer_nombre: "",
@@ -114,14 +107,10 @@ const Clientes = () => {
 
   const obtenerClientes = async () => {
     try {
-      const respuesta = await fetch("http://localhost:3000/api/clientes");
-      if (!respuesta.ok) {
-        throw new Error("Error al obtener los clientes");
-      }
-
-      const datos = await respuesta.json();
-      setClientes(datos);
-      setClientesFiltrados(datos);
+      const { data, error } = await supabase.from('clientes').select('*');
+      if (error) throw error;
+      setClientes(data);
+      setClientesFiltrados(data);
       setCargando(false);
     } catch (error) {
       console.log(error.message);

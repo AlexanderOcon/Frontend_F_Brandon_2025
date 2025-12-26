@@ -8,6 +8,7 @@ import ModalEliminacionVenta from '../components/ventas/ModalEliminacionVenta';
 import ModalDetallesVenta from '../components/detalles_ventas/ModalDetallesVentas';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { supabase } from "../supabaseClient";
 
 const Ventas = () => {
   const [ventas, setVentas] = useState([]);
@@ -54,9 +55,12 @@ const Ventas = () => {
   const obtenerNombreCliente = async (idCliente) => {
     if (!idCliente) return '—';
     try {
-      const resp = await fetch(`http://localhost:3000/api/cliente/${idCliente}`);
-      if (!resp.ok) return '—';
-      const data = await resp.json();
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('primer_nombre, primer_apellido')
+        .eq('id_cliente', idCliente)
+        .single();
+      if (error) return '—';
       return `${data.primer_nombre} ${data.primer_apellido}`;
     } catch (error) {
       console.error("Error al cargar nombre del cliente:", error);
@@ -67,9 +71,12 @@ const Ventas = () => {
   const obtenerNombreEmpleado = async (idEmpleado) => {
     if (!idEmpleado) return '—';
     try {
-      const resp = await fetch(`http://localhost:3000/api/empleado/${idEmpleado}`);
-      if (!resp.ok) return '—';
-      const data = await resp.json();
+      const { data, error } = await supabase
+        .from('empleados')
+        .select('primer_nombre, primer_apellido')
+        .eq('id_empleado', idEmpleado)
+        .single();
+      if (error) return '—';
       return `${data.primer_nombre} ${data.primer_apellido}`;
     } catch (error) {
       console.error("Error al cargar nombre del empleado:", error);
@@ -80,9 +87,12 @@ const Ventas = () => {
   const obtenerNombreProducto = async (idProducto) => {
     if (!idProducto) return '—';
     try {
-      const resp = await fetch(`http://localhost:3000/api/producto/${idProducto}`);
-      if (!resp.ok) return '—';
-      const data = await resp.json();
+      const { data, error } = await supabase
+        .from('productos')
+        .select('nombre_producto')
+        .eq('id_producto', idProducto)
+        .single();
+      if (error) return '—';
       return data.nombre_producto || '—';
     } catch (error) {
       console.error("Error al cargar nombre del producto:", error);
@@ -93,9 +103,8 @@ const Ventas = () => {
   // === CARGAR VENTAS CON NOMBRES ===
   const obtenerVentas = async () => {
     try {
-      const resp = await fetch('http://localhost:3000/api/ventas');
-      if (!resp.ok) throw new Error('Error al cargar ventas');
-      const ventasRaw = await resp.json();
+      const { data: ventasRaw, error } = await supabase.from('ventas').select('*');
+      if (error) throw error;
 
       const ventasConNombres = await Promise.all(
         ventasRaw.map(async (v) => ({
@@ -118,9 +127,8 @@ const Ventas = () => {
   // === CARGAR DETALLES CON NOMBRE DE PRODUCTO ===
   const obtenerDetallesVenta = async (id_venta) => {
     try {
-      const resp = await fetch('http://localhost:3000/api/detallesventas');
-      if (!resp.ok) throw new Error('Error al cargar detalles');
-      const todos = await resp.json();
+      const { data: todos, error } = await supabase.from('detalles_ventas').select('*');
+      if (error) throw error;
       const filtrados = todos.filter(d => d.id_venta === parseInt(id_venta));
 
       const detalles = await Promise.all(
@@ -141,10 +149,9 @@ const Ventas = () => {
   // === CARGAR CATÁLOGOS ===
   const obtenerClientes = async () => {
     try {
-      const resp = await fetch('http://localhost:3000/api/clientes');
-      if (!resp.ok) throw new Error('Error al cargar clientes');
-      const datos = await resp.json();
-      setClientes(datos);
+      const { data, error } = await supabase.from('clientes').select('*');
+      if (error) throw error;
+      setClientes(data);
     } catch (error) {
       console.error(error);
     }
@@ -152,10 +159,9 @@ const Ventas = () => {
 
   const obtenerEmpleados = async () => {
     try {
-      const resp = await fetch('http://localhost:3000/api/empleados');
-      if (!resp.ok) throw new Error('Error al cargar empleados');
-      const datos = await resp.json();
-      setEmpleados(datos);
+      const { data, error } = await supabase.from('empleados').select('*');
+      if (error) throw error;
+      setEmpleados(data);
     } catch (error) {
       console.error(error);
     }
@@ -163,10 +169,9 @@ const Ventas = () => {
 
   const obtenerProductos = async () => {
     try {
-      const resp = await fetch('http://localhost:3000/api/productos');
-      if (!resp.ok) throw new Error('Error al cargar productos');
-      const datos = await resp.json();
-      setProductos(datos);
+      const { data, error } = await supabase.from('productos').select('*');
+      if (error) throw error;
+      setProductos(data);
     } catch (error) {
       console.error(error);
     }
@@ -195,22 +200,19 @@ const Ventas = () => {
     const total = detallesNuevos.reduce((sum, d) => sum + (d.cantidad * d.precio_unitario), 0);
 
     try {
-      const ventaResp = await fetch('http://localhost:3000/api/registrarVenta', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...nuevaVenta, total_venta: total })
-      });
+      const { data: ventaData, error: ventaError } = await supabase
+        .from('ventas')
+        .insert([{ ...nuevaVenta, total_venta: total }])
+        .select()
+        .single();
+      if (ventaError) throw ventaError;
+      const id_venta = ventaData.id_venta;
 
-      if (!ventaResp.ok) throw new Error('Error al crear venta');
-      const { id_venta } = await ventaResp.json();
-
-      for (const d of detallesNuevos) {
-        await fetch('http://localhost:3000/api/registrardetallesventas', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...d, id_venta })
-        });
-      }
+      const detallesToInsert = detallesNuevos.map(d => ({ ...d, id_venta }));
+      const { error: detallesError } = await supabase
+        .from('detalles_ventas')
+        .insert(detallesToInsert);
+      if (detallesError) throw detallesError;
 
       await obtenerVentas();
       cerrarModalRegistro();
@@ -230,8 +232,8 @@ const Ventas = () => {
       fecha_venta: new Date(venta.fecha_venta).toISOString().split("T")[0]
     });
 
-    const resp = await fetch('http://localhost:3000/api/detallesventas');
-    const todos = await resp.json();
+    const { data: todos, error } = await supabase.from('detalles_ventas').select('*');
+    if (error) throw error;
     const detallesRaw = todos.filter(d => d.id_venta === venta.id_venta);
 
     const detalles = await Promise.all(
@@ -250,26 +252,28 @@ const Ventas = () => {
   const actualizarVenta = async () => {
     const total = detallesNuevos.reduce((sum, d) => sum + (d.cantidad * d.precio_unitario), 0);
     try {
-      await fetch(`http://localhost:3000/api/actualizarventa/${ventaAEditar.id_venta}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...ventaEnEdicion, total_venta: total })
-      });
+      const { error: updateError } = await supabase
+        .from('ventas')
+        .update({ ...ventaEnEdicion, total_venta: total })
+        .eq('id_venta', ventaAEditar.id_venta);
+      if (updateError) throw updateError;
 
-      const resp = await fetch('http://localhost:3000/api/detallesventas');
-      const todos = await resp.json();
+      const { data: todos, error: fetchError } = await supabase.from('detalles_ventas').select('*');
+      if (fetchError) throw fetchError;
       const actuales = todos.filter(d => d.id_venta === ventaAEditar.id_venta);
       for (const d of actuales) {
-        await fetch(`http://localhost:3000/api/eliminardetalleventa/${d.id_detalle_venta}`, { method: 'DELETE' });
+        const { error: deleteError } = await supabase
+          .from('detalles_ventas')
+          .delete()
+          .eq('id_detalle_venta', d.id_detalle_venta);
+        if (deleteError) throw deleteError;
       }
 
-      for (const d of detallesNuevos) {
-        await fetch('http://localhost:3000/api/registrardetalleventas', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...d, id_venta: ventaAEditar.id_venta })
-        });
-      }
+      const detallesToInsert = detallesNuevos.map(d => ({ ...d, id_venta: ventaAEditar.id_venta }));
+      const { error: insertError } = await supabase
+        .from('detalles_ventas')
+        .insert(detallesToInsert);
+      if (insertError) throw insertError;
 
       await obtenerVentas();
       cerrarModalEdicion();
@@ -286,12 +290,24 @@ const Ventas = () => {
 
   const eliminarVenta = async () => {
     try {
-      await fetch(`http://localhost:3000/api/eliminarventa/${ventaAEliminar.id_venta}`, { method: 'DELETE' });
+      // First delete detalles
+      const { error: deleteDetallesError } = await supabase
+        .from('detalles_ventas')
+        .delete()
+        .eq('id_venta', ventaAEliminar.id_venta);
+      if (deleteDetallesError) throw deleteDetallesError;
+
+      // Then delete venta
+      const { error: deleteVentaError } = await supabase
+        .from('ventas')
+        .delete()
+        .eq('id_venta', ventaAEliminar.id_venta);
+      if (deleteVentaError) throw deleteVentaError;
+
       await obtenerVentas();
       setMostrarModalEliminar(false);
     } catch (error) {
       alert("No se pudo eliminar.", error);
-
     }
   };
 

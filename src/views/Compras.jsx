@@ -7,6 +7,7 @@ import ModalEdicionCompra from "../components/compras/ModalEdicionCompra";
 import ModalEliminacionCompra from "../components/compras/ModalEliminacionCompra";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { supabase } from "../supabaseClient";
 
 const Compras = () => {
   const [compras, setCompras] = useState([]);
@@ -40,12 +41,8 @@ const Compras = () => {
     // Requerir id_empleado (coincide con el input obligatorio del modal)
     if (!String(nuevaCompra.id_empleado).trim()) return;
     try {
-      const respuesta = await fetch("http://localhost:3000/api/registrarcompra", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevaCompra),
-      });
-      if (!respuesta.ok) throw new Error("Error al guardar compra");
+      const { error } = await supabase.from('compras').insert([nuevaCompra]);
+      if (error) throw error;
       setNuevaCompra({ id_empleado: "", fecha_compra: "", total_compra: "" });
       setMostrarModal(false);
       await obtenerCompras();
@@ -63,15 +60,11 @@ const Compras = () => {
   const guardarEdicion = async () => {
     if (!String(compraEditada?.id_empleado || "").trim()) return;
     try {
-      const respuesta = await fetch(
-        `http://localhost:3000/api/actualizarcompra/${compraEditada.id_compra}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(compraEditada),
-        }
-      );
-      if (!respuesta.ok) throw new Error("Error al actualizar compra");
+      const { error } = await supabase
+        .from('compras')
+        .update(compraEditada)
+        .eq('id_compra', compraEditada.id_compra);
+      if (error) throw error;
       setMostrarModalEdicion(false);
       await obtenerCompras();
     } catch (error) {
@@ -87,11 +80,11 @@ const Compras = () => {
 
   const confirmarEliminacion = async () => {
     try {
-      const respuesta = await fetch(
-        `http://localhost:3000/api/eliminarcompra/${compraAEliminar.id_compra}`,
-        { method: "DELETE" }
-      );
-      if (!respuesta.ok) throw new Error("Error al eliminar compra");
+      const { error } = await supabase
+        .from('compras')
+        .delete()
+        .eq('id_compra', compraAEliminar.id_compra);
+      if (error) throw error;
       setMostrarModalEliminar(false);
       setCompraAEliminar(null);
       await obtenerCompras();
@@ -103,14 +96,10 @@ const Compras = () => {
 
   const obtenerCompras = async () => {
     try {
-      const respuesta = await fetch("http://localhost:3000/api/compras");
-      if (!respuesta.ok) {
-        throw new Error("Error al obtener los clientes");
-      }
-
-      const datos = await respuesta.json();
-      setCompras(datos);
-      setComprasFiltradas(datos);
+      const { data, error } = await supabase.from('compras').select('*');
+      if (error) throw error;
+      setCompras(data);
+      setComprasFiltradas(data);
       setCargando(false);
     } catch (error) {
       console.log(error.message);
